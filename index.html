@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>English Word Cards</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      color: #1e293b;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      margin: 0 0 8px;
+      font-size: 36px;
+    }
+    .header p {
+      margin: 0;
+      color: #475569;
+    }
+    .topbar {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0 28px;
+    }
+    button, select {
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      transition: 0.2s;
+    }
+    button:hover { background: #1d4ed8; }
+    button.secondary { background: #0f172a; }
+    button.secondary:hover { background: #020617; }
+    button.ghost {
+      background: white;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .stat {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      text-align: center;
+    }
+    .stat h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: #64748b;
+    }
+    .stat p {
+      margin: 0;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .card-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 32px 0 20px;
+      perspective: 1000px;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      height: 260px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      cursor: pointer;
+    }
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      backface-visibility: hidden;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+      font-size: 34px;
+      font-weight: bold;
+    }
+    .front {
+      background: white;
+    }
+    .back {
+      background: #dbeafe;
+      transform: rotateY(180deg);
+    }
+    .card-note {
+      text-align: center;
+      color: #475569;
+      margin-bottom: 20px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .panel {
+      background: white;
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      margin-top: 24px;
+    }
+    .panel h2 {
+      margin-top: 0;
+    }
+    .review-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .review-item {
+      border: 1px solid #dbeafe;
+      border-radius: 14px;
+      padding: 14px;
+      background: #f8fbff;
+    }
+    .review-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    .empty {
+      color: #64748b;
+    }
+    .level-complete {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 18px;
+      text-align: center;
+      display: none;
+    }
+    @media (max-width: 600px) {
+      .card-face { font-size: 28px; }
+      .header h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>English Word Cards</h1>
+      <p>İngilizce kelimeleri kartlarla öğren.</p>
+    </div>
+
+    <div class="topbar">
+      <select id="levelSelect"></select>
+      <button class="ghost" id="resetLevelBtn">Bu seviyeyi sıfırla</button>
+      <button class="secondary" id="toggleReviewBtn">Tekrar alanını aç / kapa</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <h3>Seviye</h3>
+        <p id="levelName">A1</p>
+      </div>
+      <div class="stat">
+        <h3>İlerleme</h3>
+        <p id="progressText">1 / 5</p>
+      </div>
+      <div class="stat">
+        <h3>Tekrar</h3>
+        <p id="reviewCount">0</p>
+      </div>
+    </div>
+
+    <div class="card-wrap">
+      <div class="card" id="flashcard">
+        <div class="card-face front" id="cardFront">Apple</div>
+        <div class="card-face back" id="cardBack">Elma</div>
+      </div>
+    </div>
+
+    <div class="card-note">Kartın üstüne tıkla, çeviri görünsün.</div>
+
+    <div class="actions">
+      <button id="addReviewBtn">Tekrara ekle</button>
+      <button id="nextBtn">Sonraki karta geç</button>
+    </div>
+
+    <div id="completeBox" class="level-complete"></div>
+
+    <div id="reviewPanel" class="panel" style="display:none;">
+      <h2>Geçmiş / Tekrar</h2>
+      <p>Burada gördüğün kartları sonra tekrar edebilirsin.</p>
+      <div id="reviewList" class="review-list"></div>
+    </div>
+  </div>
+
+  <script>
+    const levels = {
+      A1: [
+        { en: 'Apple', tr: 'Elma' },
+        { en: 'Book', tr: 'Kitap' },
+        { en: 'Water', tr: 'Su' },
+        { en: 'House', tr: 'Ev' },
+        { en: 'Friend', tr: 'Arkadaş' }
+      ],
+      A2: [
+        { en: 'Travel', tr: 'Seyahat' },
+        { en: 'Market', tr: 'Pazar / Market' },
+        { en: 'Window', tr: 'Pencere' },
+        { en: 'Teacher', tr: 'Öğretmen' },
+        { en: 'Morning', tr: 'Sabah' }
+      ],
+      B1: [
+        { en: 'Improve', tr: 'Geliştirmek' },
+        { en: 'Decision', tr: 'Karar' },
+        { en: 'Journey', tr: 'Yolculuk' },
+        { en: 'Success', tr: 'Başarı' },
+        { en: 'Develop', tr: 'Gelişmek / Geliştirmek' }
+      ],
+      B2: [
+        { en: 'Challenge', tr: 'Meydan okuma / Zorluk' },
+        { en: 'Achieve', tr: 'Başarmak' },
+        { en: 'Opportunity', tr: 'Fırsat' },
+        { en: 'Increase', tr: 'Artırmak' },
+        { en: 'Ancient', tr: 'Antik / Eski' }
+      ]
+    };
+
+    const levelKeys = Object.keys(levels);
+    const levelSelect = document.getElementById('levelSelect');
+    const levelName = document.getElementById('levelName');
+    const progressText = document.getElementById('progressText');
+    const reviewCount = document.getElementById('reviewCount');
+    const flashcard = document.getElementById('flashcard');
+    const cardFront = document.getElementById('cardFront');
+    const cardBack = document.getElementById('cardBack');
+    const nextBtn = document.getElementById('nextBtn');
+    const addReviewBtn = document.getElementById('addReviewBtn');
+    const toggleReviewBtn = document.getElementById('toggleReviewBtn');
+    const reviewPanel = document.getElementById('reviewPanel');
+    const reviewList = document.getElementById('reviewList');
+    const completeBox = document.getElementById('completeBox');
+    const resetLevelBtn = document.getElementById('resetLevelBtn');
+
+    let currentLevel = localStorage.getItem('currentLevel') || 'A1';
+    let currentIndex = Number(localStorage.getItem('currentIndex')) || 0;
+    let reviewWords = JSON.parse(localStorage.getItem('reviewWords') || '[]');
+
+    function saveState() {
+      localStorage.setItem('currentLevel', currentLevel);
+      localStorage.setItem('currentIndex', currentIndex);
+      localStorage.setItem('reviewWords', JSON.stringify(reviewWords));
+    }
+
+    function fillLevels() {
+      levelSelect.innerHTML = '';
+      levelKeys.forEach(level => {
+        const option = document.createElement('option');
+        option.value = level;
+        option.textContent = level;
+        if (level === currentLevel) option.selected = true;
+        levelSelect.appendChild(option);
+      });
+    }
+
+    function getCurrentWords() {
+      return levels[currentLevel];
+    }
+
+    function showCard() {
+      const words = getCurrentWords();
+      if (currentIndex >= words.length) {
+        currentIndex = words.length - 1;
+      }
+      const word = words[currentIndex];
+      cardFront.textContent = word.en;
+      cardBack.textContent = word.tr;
+      flashcard.classList.remove('flipped');
+      levelName.textContent = currentLevel;
+      progressText.textContent = `${currentIndex + 1} / ${words.length}`;
+      reviewCount.textContent = reviewWords.length;
+    }
+
+    function renderReview() {
+      reviewCount.textContent = reviewWords.length;
+      if (reviewWords.length === 0) {
+        reviewList.innerHTML = '<div class="empty">Henüz tekrar listesine eklenmiş kart yok.</div>';
+        return;
+      }
+      reviewList.innerHTML = reviewWords.map((item, i) => `
+        <div class="review-item">
+          <strong>${item.en}</strong>
+          <span>${item.tr}</span>
+          <div style="margin-top:10px;">
+            <button class="ghost" onclick="removeReview(${i})">Sil</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.removeReview = function(index) {
+      reviewWords.splice(index, 1);
+      saveState();
+      renderReview();
+    }
+
+    function moveToNextLevel() {
+      const idx = levelKeys.indexOf(currentLevel);
+      if (idx < levelKeys.length - 1) {
+        currentLevel = levelKeys[idx + 1];
+        currentIndex = 0;
+        completeBox.style.display = 'block';
+        completeBox.innerHTML = `🎉 ${levelKeys[idx]} seviyesi bitti. Sıradaki seviyeye geçtin: <strong>${currentLevel}</strong>`;
+      } else {
+        completeBox.style.display = 'block';
+        completeBox.innerHTML = '🏆 Tüm seviyeleri bitirdin. Harika iş!';
+        currentIndex = getCurrentWords().length - 1;
+      }
+      fillLevels();
+      saveState();
+      showCard();
+    }
+
+    flashcard.addEventListener('click', () => {
+      flashcard.classList.toggle('flipped');
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const words = getCurrentWords();
+      if (currentIndex < words.length - 1) {
+        currentIndex++;
+        completeBox.style.display = 'none';
+      } else {
+        moveToNextLevel();
+        return;
+      }
+      saveState();
+      showCard();
+    });
+
+    addReviewBtn.addEventListener('click', () => {
+      const currentWord = getCurrentWords()[currentIndex];
+      const exists = reviewWords.some(item => item.en === currentWord.en && item.tr === currentWord.tr);
+      if (!exists) {
+        reviewWords.unshift(currentWord);
+        saveState();
+        renderReview();
+      }
+    });
+
+    toggleReviewBtn.addEventListener('click', () => {
+      reviewPanel.style.display = reviewPanel.style.display === 'none' ? 'block' : 'none';
+    });
+
+    levelSelect.addEventListener('change', (e) => {
+      currentLevel = e.target.value;
+      currentIndex = 0;
+      completeBox.style.display = 'none';
+      saveState();
+      showCard();
+    });
+
+    resetLevelBtn.addEventListener('click', () => {
+      currentIndex = 0;
+      completeBox.style.display = 'none';
+      saveState();
+      showCard();
+    });
+
+    fillLevels();
+    showCard();
+    renderReview();
+  </script>
+</body>
+</html>
