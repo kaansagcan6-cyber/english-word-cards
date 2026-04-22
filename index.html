@@ -14,10 +14,11 @@
       min-height: 100vh;
     }
     .app {
-      max-width: 1100px;
+      width: 100%;
+      max-width: 1600px;
       margin: 0 auto;
       min-height: 100vh;
-      padding: 10px 24px 24px;
+      padding: 10px 24px 32px;
     }
     .top-tabs {
       display: flex;
@@ -43,12 +44,13 @@
     }
     .layout {
       display: grid;
-      grid-template-columns: 220px 1fr;
+      grid-template-columns: 220px minmax(0, 1fr) 220px;
       gap: 20px;
       align-items: start;
-      margin-top: 6px;
+      margin-top: 10px;
     }
     .sidebar {
+      grid-column: 1;
       padding-top: 8px;
     }
     .sidebar-title {
@@ -105,19 +107,23 @@
       background: rgba(255,255,255,0.3);
     }
     .main {
+      grid-column: 2;
       display: flex;
       flex-direction: column;
       align-items: center;
+      width: 100%;
+      padding-top: 4px;
     }
     .section-label {
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 900;
-      margin-bottom: 2px;
+      margin-bottom: 10px;
       text-transform: uppercase;
+      text-align: center;
     }
     .card {
-      width: min(100%, 340px);
-      height: 292px;
+      width: min(100%, 760px);
+      min-height: 520px;
       background: #cfcfcf;
       border-radius: 24px;
       box-shadow: 10px 12px 16px rgba(0,0,0,0.18);
@@ -125,32 +131,32 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
-      font-size: clamp(34px, 6vw, 70px);
+      padding: 28px;
+      font-size: clamp(44px, 8vw, 112px);
       font-weight: 900;
       margin-top: 2px;
       user-select: none;
       cursor: pointer;
     }
     .next-btn {
-      margin-top: 18px;
-      width: min(100%, 340px);
-      height: 38px;
+      margin-top: 22px;
+      width: min(100%, 760px);
+      height: 78px;
       border: none;
       border-radius: 999px;
       background: #cfcfcf;
       box-shadow: 10px 12px 16px rgba(0,0,0,0.18);
-      font-size: 28px;
+      font-size: 42px;
       font-weight: 900;
       cursor: pointer;
       line-height: 1;
     }
     .history-list {
-      width: min(100%, 340px);
+      width: min(100%, 760px);
       display: flex;
       flex-direction: column;
       gap: 12px;
-      margin-top: 16px;
+      margin-top: 18px;
       max-height: 300px;
       overflow: auto;
       padding-right: 4px;
@@ -170,31 +176,36 @@
       font-weight: 700;
     }
     .empty {
-      width: min(100%, 340px);
+      width: min(100%, 760px);
       background: #cfcfcf;
       border-radius: 16px;
       box-shadow: 8px 10px 14px rgba(0,0,0,0.18);
       padding: 18px;
       text-align: center;
       font-weight: 900;
-      font-size: 18px;
-      margin-top: 16px;
+      font-size: 20px;
+      margin-top: 18px;
     }
     .complete-box {
-      width: min(100%, 420px);
+      width: min(100%, 760px);
       background: #cfcfcf;
       border-radius: 18px;
       box-shadow: 8px 10px 14px rgba(0,0,0,0.18);
-      padding: 14px 18px;
+      padding: 16px 20px;
       text-align: center;
       font-weight: 900;
-      font-size: 18px;
-      margin-top: 14px;
+      font-size: 22px;
+      margin-top: 16px;
       display: none;
     }
-    @media (max-width: 760px) {
+    @media (max-width: 900px) {
       .layout {
         grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      .sidebar,
+      .main {
+        grid-column: auto;
       }
       .sidebar {
         display: flex;
@@ -209,6 +220,21 @@
       }
       .top-tabs button {
         font-size: 22px;
+      }
+      .card {
+        width: min(100%, 92vw);
+        min-height: 360px;
+        font-size: clamp(34px, 10vw, 74px);
+      }
+      .next-btn,
+      .history-list,
+      .empty,
+      .complete-box {
+        width: min(100%, 92vw);
+      }
+      .next-btn {
+        height: 62px;
+        font-size: 32px;
       }
     }
   </style>
@@ -403,6 +429,17 @@
       if (currentTab === 'learn') {
         currentSide = currentSide === 'en' ? 'tr' : 'en';
         renderCard();
+      } else if (currentTab === 'history') {
+        if (historyWords.length === 0) return;
+
+        const currentText = card.textContent;
+        const currentItem = historyWords.find(
+          item => item.en === currentText || item.tr === currentText
+        );
+
+        if (!currentItem) return;
+
+        card.textContent = currentText === currentItem.en ? currentItem.tr : currentItem.en;
       }
     });
 
